@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/armon/go-metrics"
-	"github.com/jbgoldman1104/nxqconfig"
+	"github.com/nexqloud/nxqconfig"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,7 +37,7 @@ var _ types.MsgServer = msgServer{}
 
 func isInWhiteList(addr string) bool {
 	return addr != nxqconfig.MaintenanceWallet && addr != nxqconfig.Vault1Wallet && addr != nxqconfig.Vault2Wallet &&
-		addr != nxqconfig.Vault3Wallet && addr != nxqconfig.Vault4Wallet && addr != nxqconfig.Vault5Wallet
+		addr != nxqconfig.Vault3Wallet && addr != nxqconfig.Vault4Wallet && addr != nxqconfig.Vault5Wallet && addr != nxqconfig.GasCollector
 }
 
 func checkOnlineDevices() error {

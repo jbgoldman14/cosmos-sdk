@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/jbgoldman1104/nxqconfig"
+	"github.com/nexqloud/nxqconfig"
 	"github.com/tendermint/tendermint/libs/log" // NexQloud: 2024.3.5
 )
 
@@ -141,14 +141,13 @@ func DeductFees(bankKeeper types.BankKeeper, ctx sdk.Context, acc types.AccountI
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "SafeQuoInt failed")
 	}
 	// logger := logger(ctx)
-	nxqLogger.Info("Maintenance wallet", nxqconfig.MaintenanceWallet)
-	maintenanceWallet, addrerr := sdk.AccAddressFromBech32(nxqconfig.MaintenanceWallet)
-	// maintenanceWallet, addrerr := sdk.AccAddressFromBech32("nxq1c9sumtfpgkvwfs6mxm09p5a92ps2jej8gmu73t")
+	nxqLogger.Info("Maintenance wallet", nxqconfig.GasCollector)
+	gasCollector, addrerr := sdk.AccAddressFromBech32(nxqconfig.GasCollector)
 	if addrerr != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "get account address failed")
 	}
 
-	err := bankKeeper.SendCoins(ctx, acc.GetAddress(), maintenanceWallet, maintenanceFee)
+	err := bankKeeper.SendCoins(ctx, acc.GetAddress(), gasCollector, maintenanceFee)
 	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "sendCoins failed")
 	}
