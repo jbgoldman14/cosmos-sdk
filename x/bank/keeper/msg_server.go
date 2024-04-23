@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	devicesListApiUrl   = "https://devapi.nexqloud.org/license/devices_list_with_cloudscore"
+	devicesListApiUrl   = "https://api.nexqloud.net/license/devices_list_with_cloudscore"
 	MinCloudDeviceCount = 1000
 )
 
