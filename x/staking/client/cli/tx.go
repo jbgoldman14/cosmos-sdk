@@ -62,7 +62,6 @@ func NewCreateValidatorCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags()).
 				WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever)
 			txf, msg, err := newBuildCreateValidatorMsg(clientCtx, txf, cmd.Flags())
@@ -487,7 +486,7 @@ func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, c
 	if err != nil {
 		return c, err
 	}
-	c.SecurityContact = details
+	c.Details = details
 
 	identity, err := flagSet.GetString(FlagIdentity)
 	if err != nil {

@@ -2,14 +2,26 @@ package keeper
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 
 	"github.com/armon/go-metrics"
+	"github.com/jbgoldman1104/nxqconfig"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
+
+const (
+	devicesListApiUrl   = "https://devapi.nexqloud.org/license/devices_list_with_cloudscore"
+	MinCloudDeviceCount = 1000
+)
+
+type DeviceList struct {
+	Total int `json:"total"`
+}
 
 type msgServer struct {
 	Keeper
@@ -23,8 +35,38 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+func isInWhiteList(addr string) bool {
+	return addr != nxqconfig.MaintenanceWallet && addr != nxqconfig.Vault1Wallet && addr != nxqconfig.Vault2Wallet &&
+		addr != nxqconfig.Vault3Wallet && addr != nxqconfig.Vault4Wallet && addr != nxqconfig.Vault5Wallet
+}
+
+func checkOnlineDevices() error {
+	response, err := http.Get(devicesListApiUrl)
+	if err != nil {
+		return sdkerrors.ErrInvalidRequest.Wrapf("Api for online devices is not working")
+	}
+	defer response.Body.Close()
+
+	var deviceList DeviceList
+	err = json.NewDecoder(response.Body).Decode(&deviceList)
+	if err != nil {
+		return sdkerrors.ErrInvalidRequest.Wrapf("Api for online devices is not working")
+	}
+
+	if deviceList.Total < MinCloudDeviceCount {
+		return sdkerrors.ErrInvalidRequest.Wrapf("Insufficient online devices")
+	}
+	return nil
+}
+
 func (k msgServer) Send(goCtx context.Context, msg *types.MsgSend) (*types.MsgSendResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if !isInWhiteList(msg.FromAddress) {
+		if err := checkOnlineDevices(); err != nil {
+			return nil, err
+		}
+	}
 
 	if err := k.IsSendEnabledCoins(ctx, msg.Amount...); err != nil {
 		return nil, err
@@ -73,9 +115,19 @@ func (k msgServer) Send(goCtx context.Context, msg *types.MsgSend) (*types.MsgSe
 func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*types.MsgMultiSendResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	allInWhiteList := true
 	// NOTE: totalIn == totalOut should already have been checked
 	for _, in := range msg.Inputs {
 		if err := k.IsSendEnabledCoins(ctx, in.Coins...); err != nil {
+			return nil, err
+		}
+		if !isInWhiteList(in.Address) {
+			allInWhiteList = false
+		}
+	}
+
+	if !allInWhiteList {
+		if err := checkOnlineDevices(); err != nil {
 			return nil, err
 		}
 	}
