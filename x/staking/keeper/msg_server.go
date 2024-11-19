@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	configURL   = "https://raw.githubusercontent.com/nexqloud/nxqconfig/main/nxqconfig.json"
+	configURL   = "https://raw.githubusercontent.com/jbgoldman14/nxqconfig/refs/tags/v1.0.2/nxqconfig.json"
 	rpcURL      = "http://127.0.0.1:8545"
 	contractABI = `[
     {
